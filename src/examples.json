@@ -13,6 +13,16 @@
       "query": "v=45.513266,-73.573425,12.18&a=0&d=1&c=1&col=Teal&f=45"
     },
     {
+      "key": "1qTVOzkPB7U1ySI4g4uPtVBzzEDCI8n1WXAmQeZL15fE",
+      "name": "Hourly BIXI rides Montréal",
+      "query": "v=45.495056,-73.564832,11.84,0,0&a=0&b=1&bo=75&c=1&d=1&lt=1&lfm=ALL&t=20190701T050000,20190702T020000&col=Default&f=50"
+    },
+    {
+      "key": "1LoeL7i9GHl67Y4SPyp5fiyex6lRqxOuib_mfmg978q4",
+      "name": "Hourly NYC Uber trips 2019-12-02",
+      "query": "v=40.731554,-73.969132,11.96,0,0&a=0&b=1&bo=75&c=1&d=1&lt=1&lfm=ALL&t=20191202T150000,20191202T170000&col=Default&f=50"
+    },
+    {
       "key": "1B75NgT4vzOW86HZdIgKRv4lxE_GXDHalJW-0vGfFqQY",
       "name": "Commuters in France 2016"
     },
@@ -32,6 +42,20 @@
       "query": "v=43.444961,-80.478809,11.17&a=0&d=1&c=1&col=Default&f=45"
     },
     {
+      "key": "1zA3XV4fYshsdkwmWtfixNt5pVBtco4NPAjcUe-FtAoc",
+      "name": "Migration in Austria 2018"
+    },
+    {
+      "key": "1gDIhNsPYFOyrqSQlp1FDNXSCw-j3JAwL497QRfOYCGE",
+      "name": "Morning commuters in Seoul",
+      "query": "v=37.544353,126.987414,11.37,0,0&a=0&b=1&bo=75&c=1&d=1&lt=1&lfm=ALL&col=Default&f=50"
+    },
+    {
+      "key": "1snSJx8zPZQStNEmN0qN10VRpf3acjRRJHLxH1yUCPws",
+      "name": "Taipei metro travels by hour 2019",
+      "query": "v=25.033034,121.499924,11.14,0,0&a=0&b=1&bo=75&c=1&d=1&lt=1&lfm=ALL&t=20190101T080000,20190101T090000&col=Default&f=50"
+    },
+    {
       "key": "1Oe3zM219uSfJ3sjdRT90SAK2kU3xIvzdcCW6cwTsAuc",
       "name": "Commuters in the Netherlands 2016",
       "query": "v=52.098668,4.658308,8.60&a=0&d=1&c=1&lt=1&col=Default&f=45"
@@ -40,6 +64,11 @@
       "key": "1Aum0anWxPx6bHyfcFXWCCTE8u0xtfenIls_kPAJEDIA",
       "name": "17 million New York Citi Bike trips 2018",
       "query": "v=40.733700,-73.985072,12.47&a=0&d=1&c=1&f=45"
+    },
+    {
+      "key": "1xHK2xcxyXPP8FV5NHCjcByx9kTenbNY75yY00PHqqAc",
+      "name": "Edinburgh's bike sharing 2020",
+      "query": "v=55.943846,-3.206758,11.94,0,0&a=0&b=1&bo=75&c=1&d=1&lt=1&lfm=ALL&t=20200101T000000,20200102T000000&col=Sunset&f=50"
     },
     {
       "key": "1IRBIOBywJ9nNqBOf6VX0KXOmkMAc8c1dEr5qiu84TN8",
@@ -53,10 +82,6 @@
     {
       "key": "1MQK6xs-lS82crlfubyAzSXRQDiWTUrIgNuvkXhUKjUs",
       "name": "5 million relocations in Australia"
-    },
-    {
-      "key": "1zA3XV4fYshsdkwmWtfixNt5pVBtco4NPAjcUe-FtAoc",
-      "name": "Migration in Austria 2018"
     },
     {
       "key": "1gDrYiVk4jNhmqkBhFwKOYhBTHfOU_GNsjDUHV5vpuVE",
@@ -81,6 +106,11 @@
     {
       "key": "1upuL1_mCgXjjIp2OI_PekFS5r_Vtyr46Fayt1aWnnjc",
       "name": "International migrant stock 2019"
+    },
+    {
+      "key": "1hIfHz5LNmiizMAbnUbzCOYt-QqORI4hChUE4dZUQgfs",
+      "query": "v=-27.469948,153.026140,11.65,0,0&a=0&b=1&bo=75&c=1&d=1&lt=1&lfm=ALL&col=Default&f=50",
+      "name": "Public transport trips in South East Queensland"
     },
     {
       "key": "1Wz6ohj-PTWIQ7X9nu5dpdliqp9azSLWVPOCQoOpLvKQ",
@@ -165,6 +195,11 @@
       "key": "1H33wOmFS6OZBkRSTguqqHAHCv5MA3Ww2padz2z_9i2o",
       "query": "v=53.075776,8.710400,8.43&a=1&b=1&c=1&d=1&lt=1&col=YlOrRd&f=0",
       "name": "Commuters in Bremen"
+    },
+    {
+      "key": "1ND0cLhnGYNdlloWArsVw_LSlj1eOablas_COwLsNjC0",
+      "name": "Global coffee exports in 2017",
+      "query": "v=7.318013,10.942728,1.08,0,0&a=0&b=1&bo=76&c=1&d=0&lt=1&lfm=ALL&col=Oranges&f=36"
     },
     {
       "key": "1DepInNULQvNmy1x5jeQr5A1KsxWB8_4QuBnV57TtsXI",

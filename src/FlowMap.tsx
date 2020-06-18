@@ -25,10 +25,10 @@ import WebMercatorViewport from 'viewport-mercator-project';
 import {
   Absolute,
   Box,
+  BoxStyle,
   Column,
   Description,
   LegendTitle,
-  StyledBox,
   Title,
   TitleBox,
   ToastContent,
@@ -77,10 +77,10 @@ import {
   getClusterZoom,
   getDarkMode,
   getDiffMode,
-  getExpandedSelection,
   getFetchedFlows,
   getFlowMapColors,
   getFlowsForFlowMapLayer,
+  getFlowsSheets,
   getInvalidLocationIds,
   getLocations,
   getLocationsForFlowMapLayer,
@@ -91,9 +91,13 @@ import {
   getMapboxMapStyle,
   getMaxLocationCircleSize,
   getSortedFlowsForKnownLocations,
+  getTimeExtent,
+  getTimeGranularity,
+  getTotalCountsByTime,
+  getTotalFilteredCount,
+  getTotalUnfilteredCount,
   getUnknownLocations,
   NUMBER_OF_FLOWS_TO_DISPLAY,
-  getFlowsSheets,
 } from './FlowMap.selectors';
 import { AppToaster } from './AppToaster';
 import useDebounced from './hooks';
@@ -102,6 +106,8 @@ import SettingsPopover from './SettingsPopover';
 import MapDrawingEditor, { MapDrawingFeature, MapDrawingMode } from './MapDrawingEditor';
 import getBbox from '@turf/bbox';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
+import Timeline from './Timeline';
+import { TimeGranularity } from './time';
 
 const CONTROLLER_OPTIONS = {
   type: MapController,
@@ -147,22 +153,61 @@ export const ErrorsLocationsBlock = styled.div`
   overflow: auto;
 `;
 
+const SelectedTimeRangeBox = styled(BoxStyle)<{ darkMode: boolean }>((props) => ({
+  display: 'flex',
+  alignSelf: 'center',
+  fontSize: 12,
+  padding: '5px 10px',
+  borderRadius: 5,
+  backgroundColor: props.darkMode ? Colors.DARK_GRAY4 : Colors.LIGHT_GRAY4,
+  textAlign: 'center',
+}));
+
+const TimelineBox = styled(BoxStyle)({
+  minWidth: 400,
+  display: 'block',
+  boxShadow: '0 0 5px #aaa',
+  borderTop: '1px solid #999',
+});
+
+const TotalCount = styled.div<{ darkMode: boolean }>((props) => ({
+  padding: 5,
+  borderRadius: 5,
+  backgroundColor: props.darkMode ? Colors.DARK_GRAY4 : Colors.LIGHT_GRAY4,
+  textAlign: 'center',
+}));
+
 export const MAX_NUM_OF_IDS_IN_ERROR = 100;
 
-const FlowMap: React.FC<Props> = props => {
+const FlowMap: React.FC<Props> = (props) => {
   const { inBrowser, embed, config, spreadSheetKey, locationsFetch, flowsFetch } = props;
-
   const deckRef = useRef<any>();
   const history = useHistory();
   const initialState = useMemo<State>(() => getInitialState(config, history.location.search), [
     config,
-    history.location.search,
+    // history.location.search,  // this leads to initial state being recomputed on every change
   ]);
 
   const outerRef = useRef<HTMLDivElement>(null);
 
   const [state, dispatch] = useReducer<Reducer<State, Action>>(reducer, initialState);
   const [mapDrawingEnabled, setMapDrawingEnabled] = useState(false);
+  const { selectedTimeRange } = state;
+
+  const timeGranularity = getTimeGranularity(state, props);
+  const timeExtent = getTimeExtent(state, props);
+  const totalCountsByTime = getTotalCountsByTime(state, props);
+  const totalFilteredCount = getTotalFilteredCount(state, props);
+  const totalUnfilteredCount = getTotalUnfilteredCount(state, props);
+
+  useEffect(() => {
+    if (timeExtent && !selectedTimeRange) {
+      dispatch({
+        type: ActionType.SET_TIME_RANGE,
+        range: timeExtent,
+      });
+    }
+  }, [timeExtent, selectedTimeRange]);
 
   const [updateQuerySearch] = useDebounced(
     () => {
@@ -270,7 +315,7 @@ const FlowMap: React.FC<Props> = props => {
               ? invalidLocations.slice(0, MAX_NUM_OF_IDS_IN_ERROR)
               : invalidLocations
             )
-              .map(id => `${id}`)
+              .map((id) => `${id}`)
               .join(', ')}
             {invalidLocations.length > MAX_NUM_OF_IDS_IN_ERROR &&
               `… and ${invalidLocations.length - MAX_NUM_OF_IDS_IN_ERROR} others`}
@@ -298,7 +343,7 @@ const FlowMap: React.FC<Props> = props => {
             Locations with the following IDs couldn't be found in the locations sheet:
             <ErrorsLocationsBlock>
               {(ids.length > MAX_NUM_OF_IDS_IN_ERROR ? ids.slice(0, MAX_NUM_OF_IDS_IN_ERROR) : ids)
-                .map(id => `${id}`)
+                .map((id) => `${id}`)
                 .join(', ')}
               {ids.length > MAX_NUM_OF_IDS_IN_ERROR &&
                 `… and ${ids.length - MAX_NUM_OF_IDS_IN_ERROR} others`}
@@ -418,7 +463,14 @@ const FlowMap: React.FC<Props> = props => {
       width: r * 2,
       height: r * 2,
     };
-    const content = <FlowTooltipContent flow={info.object} origin={info.origin} dest={info.dest} />;
+    const content = (
+      <FlowTooltipContent
+        flow={info.object}
+        origin={info.origin}
+        dest={info.dest}
+        config={config}
+      />
+    );
     if (state.tooltip) {
       showTooltip(bounds, content);
       cancelShowTooltipDebounced();
@@ -445,8 +497,9 @@ const FlowMap: React.FC<Props> = props => {
         locationInfo={info}
         isSelectionEmpty={!selectedLocations}
         isSelected={
-          selectedLocations && selectedLocations.find(id => id === location.id) ? true : false
+          selectedLocations && selectedLocations.find((id) => id === location.id) ? true : false
         }
+        config={config}
       />
     );
     if (state.tooltip) {
@@ -509,9 +562,15 @@ const FlowMap: React.FC<Props> = props => {
           {` `}
         </p>
         <p>
-          If you are the owner of this spreadsheet, make sure you have shared it by going to "File"
-          / "Share with others", clicking "Advanced", and then choosing "Anyone with the link can
-          view".
+          If you are the owner of this spreadsheet, make sure you have shared it by doing the
+          following:
+          <ol>
+            <li>Click the “Share” button in the spreadsheet</li>
+            <li>
+              Change the selection from “Restricted” to “Anyone with the link” in the drop-down
+              under “Get link”
+            </li>
+          </ol>
         </p>
       </Message>
     );
@@ -611,12 +670,19 @@ const FlowMap: React.FC<Props> = props => {
 
   const locationsTree = getLocationsTree(state, props);
 
+  const handleTimeRangeChanged = (range: [Date, Date]) => {
+    dispatch({
+      type: ActionType.SET_TIME_RANGE,
+      range,
+    });
+  };
+
   const handleMapFeatureDrawn = (feature: MapDrawingFeature | undefined) => {
     if (feature != null) {
       const bbox = getBbox(feature) as [number, number, number, number];
       const candidates = getLocationsInBbox(locationsTree, bbox);
       if (candidates) {
-        const inPolygon = candidates.filter(loc =>
+        const inPolygon = candidates.filter((loc) =>
           booleanPointInPolygon(getLocationCentroid(loc), feature)
         );
         if (inPolygon.length > 0) {
@@ -658,7 +724,7 @@ const FlowMap: React.FC<Props> = props => {
     dispatch({ type: ActionType.RESET_BEARING_PITCH });
   };
 
-  const handleSelectFlowsSheet: React.ChangeEventHandler<HTMLSelectElement> = event => {
+  const handleSelectFlowsSheet: React.ChangeEventHandler<HTMLSelectElement> = (event) => {
     const sheet = event.currentTarget.value;
     const { onSetFlowsSheet } = props;
     if (onSetFlowsSheet) {
@@ -714,7 +780,7 @@ const FlowMap: React.FC<Props> = props => {
           showTotals: true,
           maxLocationCircleSize: getMaxLocationCircleSize(state, props),
           maxFlowThickness: animationEnabled ? 18 : 12,
-          selectedLocationIds: getExpandedSelection(state, props),
+          // selectedLocationIds: getExpandedSelection(state, props),
           highlightedLocationId:
             highlight && highlight.type === HighlightType.LOCATION
               ? highlight.locationId
@@ -779,11 +845,30 @@ const FlowMap: React.FC<Props> = props => {
           )}
         </DeckGL>
       </DeckGLOuter>
+      {timeExtent && timeGranularity && totalCountsByTime && selectedTimeRange && (
+        <Absolute bottom={20} left={100} right={200}>
+          <Column spacing={10}>
+            <SelectedTimeRangeBox darkMode={darkMode}>
+              {selectedTimeRangeToString(selectedTimeRange, timeGranularity)}
+            </SelectedTimeRangeBox>
+            <TimelineBox darkMode={darkMode}>
+              <Timeline
+                darkMode={darkMode}
+                extent={timeExtent}
+                selectedRange={selectedTimeRange}
+                timeGranularity={timeGranularity}
+                totalCountsByTime={totalCountsByTime}
+                onChange={handleTimeRangeChanged}
+              />
+            </TimelineBox>
+          </Column>
+        </Absolute>
+      )}
       {flows && (
         <>
           {searchBoxLocations && (
             <Absolute top={10} right={50}>
-              <StyledBox darkMode={darkMode}>
+              <BoxStyle darkMode={darkMode}>
                 <LocationsSearchBox
                   locationFilterMode={state.locationFilterMode}
                   locations={searchBoxLocations}
@@ -791,7 +876,7 @@ const FlowMap: React.FC<Props> = props => {
                   onSelectionChanged={handleChangeSelectLocations}
                   onLocationFilterModeChange={handleChangeLocationFilterMode}
                 />
-              </StyledBox>
+              </BoxStyle>
             </Absolute>
           )}
           <Absolute top={10} right={10}>
@@ -858,11 +943,11 @@ const FlowMap: React.FC<Props> = props => {
                   <Description>{description}</Description>
                 </div>
               )}
-              {flowsSheets && (
+              {flowsSheets && flowsSheets.length > 1 && (
                 <HTMLSelect
                   value={props.flowsSheet}
                   onChange={handleSelectFlowsSheet}
-                  options={flowsSheets.map(sheet => ({
+                  options={flowsSheets.map((sheet) => ({
                     label: sheet,
                     value: sheet,
                   }))}
@@ -895,6 +980,19 @@ const FlowMap: React.FC<Props> = props => {
                 </Away>
                 . You can <Link to="/">publish your own</Link> too.
               </div>
+
+              {totalFilteredCount != null && totalUnfilteredCount != null && (
+                <TotalCount darkMode={darkMode}>
+                  {Math.round(totalFilteredCount) === Math.round(totalUnfilteredCount)
+                    ? config['msg.totalCount.allTrips']?.replace(
+                        '{0}',
+                        formatCount(totalUnfilteredCount)
+                      )
+                    : config['msg.totalCount.countOfTrips']
+                        ?.replace('{0}', formatCount(totalFilteredCount))
+                        .replace('{1}', formatCount(totalUnfilteredCount))}
+                </TotalCount>
+              )}
             </Column>
           </Collapsible>
         </TitleBox>
@@ -905,4 +1003,33 @@ const FlowMap: React.FC<Props> = props => {
   );
 };
 
+function selectedTimeRangeToString(
+  selectedTimeRange: [Date, Date],
+  timeGranularity: TimeGranularity
+) {
+  const { interval, formatFull, order } = timeGranularity;
+  const start = selectedTimeRange[0];
+  let end = selectedTimeRange[1];
+  if (order >= 3) {
+    end = interval.offset(end, -1);
+  }
+  if (end <= start) end = start;
+  const startStr = formatFull(start);
+  const endStr = formatFull(end);
+  if (startStr === endStr) return startStr;
+
+  // TODO: split by words, only remove common words
+  // let i = 0;
+  // while (i < Math.min(startStr.length, endStr.length)) {
+  //   if (startStr.charAt(startStr.length - i - 1) !== endStr.charAt(endStr.length - i - 1)) {
+  //     break;
+  //   }
+  //   i++;
+  // }
+  // if (i > 0) {
+  //   return `${startStr.substring(0, startStr.length - i - 1)} - ${endStr}`;
+  // }
+
+  return `${startStr} – ${endStr}`;
+}
 export default FlowMap;

@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Alignment, Classes, Colors, Icon, Navbar } from '@blueprintjs/core';
+import { Alignment, Classes, Icon, Navbar } from '@blueprintjs/core';
 import Away from './Away';
 import { IconNames } from '@blueprintjs/icons';
 import GitHubLogo from './images/github.svg';
@@ -8,7 +8,7 @@ import styled from '@emotion/styled';
 import { NavHashLink } from 'react-router-hash-link';
 
 const NavBar = styled(Navbar)`
-  background-color: ${'#2c384d'} !important;;
+  background-color: ${'#2c384d'} !important;
 `;
 
 const NavMenu = styled(Navbar.Group)`

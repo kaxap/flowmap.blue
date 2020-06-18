@@ -186,7 +186,7 @@ const ListOfSteps = styled.ol`
   }
 `;
 
-const NewsletterDescription = styled(Row)`
+const NewsletterDescription = styled.div`
   font-size: 9pt;
   color: ${Colors.GRAY4};
 `;
@@ -245,6 +245,7 @@ const Home = () => (
     <ContentBody className={Classes.DARK}>
       <Helmet>
         <link href="https://flowmap.blue/" rel="canonical" />
+        <title>Flowmap.blue - Flow map visualization tool</title>
       </Helmet>
 
       <TitleRow>
@@ -266,7 +267,11 @@ const Home = () => (
                 <Button type="submit" text="Subscribe" />
               </Row>
               <NewsletterDescription>
-                Subscribe to the newsletter to learn about updates and new features.
+                Subscribe to the newsletter to learn about{' '}
+                <Away href="https://tinyletter.com/flowmap-blue/archive">
+                  updates and new features
+                </Away>
+                .
               </NewsletterDescription>
             </Column>
           </form>
@@ -317,9 +322,9 @@ const Home = () => (
                 <b>locations</b>” and “<b>flows</b>”. The <b>properties</b> sheet has the title and
                 the description for your data set and a few other configuration parameters. The{' '}
                 <b>locations</b> sheet has the columns <b>id</b>, <b>lat</b>, <b>lon</b> and the
-                optional <b>name</b>. The <b>flows</b> sheet has <b>origin</b>, <b>dest</b> and{' '}
-                <b>count</b>. The values in the <b>origin</b> and <b>dest</b> columns must be the
-                respective locations' <b>id</b>s.
+                optional <b>name</b>. The <b>flows</b> sheet has <b>origin</b>, <b>dest</b>,{' '}
+                <b>count</b> and optional <b>time</b>. The values in the <b>origin</b> and{' '}
+                <b>dest</b> columns must be the respective locations' <b>id</b>s.
               </p>
               <p>
                 Use the <Link to="/od-matrix-converter">OD-matrix converter</Link> if your movement
@@ -331,8 +336,8 @@ const Home = () => (
           </li>
           {/*<li>Publish your spreadsheet by going to "File" / "Publish to the web…"</li>*/}
           <li>
-            Share the spreadsheet by going to “File” / “Share with others”, clicking “Advanced”, and
-            then choosing “Anyone with the link can view”.{' '}
+            Click the “Share” button, then change the selection from “Restricted” to “Anyone with
+            the link” in the drop-down under “Get link”.{' '}
             <ReadMore>
               This step is required so that Flowmap.blue can access the data in your spreadsheet.
               The spreadsheet and the flow map will be effectively private as long as you don't send
@@ -345,7 +350,12 @@ const Home = () => (
           <SpreadsheetKeyExtractor />
         </ListOfSteps>
         If you are not comfortable uploading your data to Google Sheets, consider using our{' '}
-        <Link to="/in-browser">In-browser flow map</Link> tool.
+        <Link to="/in-browser">In-browser flow map</Link> tool or pass the URLs to load the CSV
+        files from as{' '}
+        <Away href="https://github.com/ilyabo/flowmap.blue/issues/18#issuecomment-610063627">
+          described here
+        </Away>
+        .
       </section>
 
       <section>
